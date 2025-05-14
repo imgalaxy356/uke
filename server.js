@@ -30,17 +30,17 @@ fs.readFile('users.json', (err, data) => {
 app.post('/auth', (req, res) => {
     const { username, key, hwid } = req.body;
 
-    if (!username || !key || !hwid) {
-        return res.json({ error: 'Missing required fields (username, key, hwid)' });
-    }
+    console.log("Received:", { username, key, hwid });
 
     const user = users.find(u =>
         u.username === username &&
         u.key === key &&
-        u.hwid === hwid  // 🔒 Enforces exact match
+        u.hwid === hwid
     );
 
     if (!user) {
+        console.log("No match found. Current users list:");
+        console.log(users);
         return res.json({ error: 'Invalid credentials or HWID' });
     }
 
