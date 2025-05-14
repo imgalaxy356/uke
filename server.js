@@ -1,39 +1,36 @@
-require('dotenv').config();  // This will load the environment variables for local development (not needed on Render directly)
+require('dotenv').config(); // Loads .env for local development
 
 const express = require('express');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const app = express();
 
-// Use Render's dynamic port or 3000 as a fallback for local development
 const port = process.env.PORT || 3000;
-
-// Use the JWT_SECRET environment variable
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
-    console.error("JWT_SECRET environment variable is required!");
-    process.exit(1);  // Exit the application if the secret is not set
+    console.error("❌ JWT_SECRET environment variable is required!");
+    process.exit(1);
 }
 
-// Middleware to parse JSON body
+// Middleware
 app.use(express.json());
 
-// Read the users.json file
+// Read users.json
 function loadUsers() {
     try {
-        const data = fs.readFileSync('users.json', 'utf8'); // Read the file
-        return JSON.parse(data); // Parse it as JSON
+        const data = fs.readFileSync('users.json', 'utf8');
+        return JSON.parse(data);
     } catch (err) {
-        console.error('Failed to load users.json:', err);
+        console.error('❌ Failed to load users.json:', err);
         return [];
     }
 }
 
-// Simulating database
+// Global user list
 let users = loadUsers();
 
-// Middleware to check for JWT token
+// Middleware: JWT Auth
 function checkAuth(req, res, next) {
     const token = req.header('Authorization');
     if (!token) {
@@ -42,14 +39,14 @@ function checkAuth(req, res, next) {
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; // Store the decoded user information in the request
+        req.user = decoded;
         next();
     } catch (err) {
         return res.status(401).json({ error: 'Invalid or expired token' });
     }
 }
 
-// Endpoint to authenticate user and generate a JWT token
+// POST /auth - Login and get token
 app.post("/auth", (req, res) => {
     const { username, key, processorId } = req.body;
 
@@ -57,26 +54,31 @@ app.post("/auth", (req, res) => {
         return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const users = JSON.parse(fs.readFileSync("users.json"));
-    const user = users.find(u => u.username === username && u.key === key);
+    const user = users.find(u =>
+        u.username === username &&
+        u.key === key
+    );
 
     if (!user) {
         return res.status(403).json({ error: "Invalid username or key" });
     }
 
-    if (user.processorId !== processorId) {
+    if ((user.processorId || "").trim() !== (processorId || "").trim()) {
         return res.status(403).json({ error: "Invalid processor ID" });
     }
 
-    res.json({ success: true });
+    // Generate JWT token
+    const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+
+    res.json({ success: true, token });
 });
 
-
-// Secure endpoint that requires authentication
+// GET /protected - Example protected route
 app.get('/protected', checkAuth, (req, res) => {
-    res.json({ message: 'This is protected data.', user: req.user });
+    res.json({ message: 'Protected content accessed.', user: req.user });
 });
 
+// Start server
 app.listen(port, () => {
-    console.log(`Auth server running on port ${port}`);
+    console.log(`✅ Auth server running on port ${port}`);
 });
