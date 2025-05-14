@@ -3,6 +3,7 @@ require('dotenv').config();  // This will load the environment variables for loc
 const express = require('express');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
+const os = require('os');  // To get the processor info
 const app = express();
 
 // Use Render's dynamic port or 3000 as a fallback for local development
@@ -33,6 +34,11 @@ function loadUsers() {
 // Simulating database
 let users = loadUsers();
 
+// Get Processor ID from the system (this assumes Windows, for cross-platform you might need adjustments)
+function getProcessorId() {
+    return os.cpus()[0].model;  // Using CPU model as the unique identifier (you could change this to a more specific ID)
+}
+
 // Middleware to check for JWT token
 function checkAuth(req, res, next) {
     const token = req.header('Authorization');
@@ -51,11 +57,14 @@ function checkAuth(req, res, next) {
 
 // Endpoint to authenticate user and generate a JWT token
 app.post('/auth', (req, res) => {
-    const { username, key, hwid } = req.body;
+    const { username, key } = req.body;
+
+    // Get the processor ID from the system
+    const processorId = getProcessorId();
 
     console.log("Received username:", username);  // Add this for debugging
     console.log("Received key:", key);            // Add this for debugging
-    console.log("Received HWID:", hwid);          // Add this for debugging
+    console.log("Processor ID from system:", processorId);  // Add this for debugging
 
     const user = users.find(u => u.username === username && u.key === key);
 
@@ -63,11 +72,14 @@ app.post('/auth', (req, res) => {
         return res.json({ error: 'Invalid username or key' });
     }
 
-    if (user.hwid !== hwid) {
-        return res.json({ error: 'HWID mismatch' });
+    if (user.processorId !== processorId) {
+        return res.json({ error: 'Processor ID mismatch' });
     }
 
-    return res.json({ success: true });
+    // Generate and send JWT token
+    const token = jwt.sign({ username: user.username, key: user.key }, JWT_SECRET, { expiresIn: '1h' });
+
+    return res.json({ success: true, token });
 });
 
 // Secure endpoint that requires authentication
