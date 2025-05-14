@@ -15,29 +15,20 @@ app.use((req, res, next) => {
     next();
 });
 
-// Load users from users.json asynchronously
+// Load users from users.json
 let users = [];
 fs.readFile('users.json', (err, data) => {
     if (err) {
         console.error('Failed to load users.json:', err);
     } else {
-        try {
-            users = JSON.parse(data);
-            console.log("Users loaded:", users); // Log the loaded users
-        } catch (parseError) {
-            console.error('Error parsing users.json:', parseError);
-        }
+        users = JSON.parse(data);
+        console.log("Users loaded:", users); // Log the loaded users
     }
 });
 
 // Authentication route
 app.post('/auth', (req, res) => {
     const { username, key, hwid } = req.body;
-
-    // Check if username, key, and hwid are provided
-    if (!username || !key || !hwid) {
-        return res.json({ error: 'Missing required fields (username, key, hwid)' });
-    }
 
     // Check if username and key match an entry in the users array
     const user = users.find(u => u.username === username && u.key === key);
@@ -55,7 +46,7 @@ app.post('/auth', (req, res) => {
     return res.json({ success: true });
 });
 
-// Start the server and listen on the specified port
+// Start the server and listen on port 10000
 app.listen(port, () => {
-    console.log([+] Auth server running on https://locomoco.onrender.com:${port});
+    console.log(`[+] Auth server running on https://uke.onrender.com:${port}`);
 });
