@@ -1,7 +1,12 @@
 [
     {
-        "username": "testuser",
-        "key": "abc123",
+        "username": "test",
+        "key": "test",
         "processorId": "BFEBFBFF000306A9"
+    },
+    {
+        "username": "user2",
+        "key": "abcdef",
+        "processorId": "YOUR_OTHER_CPU_ID"
     }
 ]
