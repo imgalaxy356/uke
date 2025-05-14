@@ -34,25 +34,37 @@ fs.readFile('users.json', (err, data) => {
 app.post('/auth', (req, res) => {
     const { username, key, hwid } = req.body;
 
-    // Check if username, key, and hwid are provided
     if (!username || !key || !hwid) {
         return res.json({ error: 'Missing required fields (username, key, hwid)' });
     }
 
-    // Check if username and key match an entry in the users array
     const user = users.find(u => u.username === username && u.key === key);
 
     if (!user) {
         return res.json({ error: 'Invalid username or key' });
     }
 
-    // Check if HWID matches
     if (user.hwid !== hwid) {
         return res.json({ error: 'HWID mismatch' });
     }
 
-    // If username, key, and hwid match, return success
-    return res.json({ success: true });
+    const now = new Date();
+    const expiresAt = new Date(user.expires);
+
+    if (expiresAt < now) {
+        return res.json({ error: 'Key has expired', expired: true });
+    }
+
+    // Optional: include expiration info
+    const msLeft = expiresAt.getTime() - now.getTime();
+    const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+
+    return res.json({
+        success: true,
+        message: 'Authentication successful',
+        keyRedeemedOn: user.redeemed || 'N/A',
+        keyExpiresIn: `${daysLeft} day(s)`
+    });
 });
 
 // Start the server and listen on the specified port
