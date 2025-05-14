@@ -2,25 +2,42 @@ const express = require('express');
 const fs = require('fs');
 const app = express();
 
-// Use the PORT environment variable or fallback to 3000 if not set
-const port = process.env.PORT || 3000;
+// Set the port to 10000 (or any other port you prefer)
+const port = 10000;
 
 // Middleware to parse JSON body
-app.use(express.json());
+app.use(express.json());  // Ensures the server can parse JSON data
 
-// Load users from users.json synchronously
+// Log all requests to check if they are being received correctly
+app.use((req, res, next) => {
+    console.log("Received request:", req.method, req.url);
+    console.log("Request body:", req.body);  // Log the body to check if it's being received
+    next();
+});
+
+// Load users from users.json asynchronously
 let users = [];
-try {
-    const data = fs.readFileSync('users.json');
-    users = JSON.parse(data);
-    console.log("Users loaded:", users); // Log the loaded users
-} catch (err) {
-    console.error('Failed to load users.json:', err);
-}
+fs.readFile('users.json', (err, data) => {
+    if (err) {
+        console.error('Failed to load users.json:', err);
+    } else {
+        try {
+            users = JSON.parse(data);
+            console.log("Users loaded:", users); // Log the loaded users
+        } catch (parseError) {
+            console.error('Error parsing users.json:', parseError);
+        }
+    }
+});
 
 // Authentication route
 app.post('/auth', (req, res) => {
     const { username, key, hwid } = req.body;
+
+    // Check if username, key, and hwid are provided
+    if (!username || !key || !hwid) {
+        return res.json({ error: 'Missing required fields (username, key, hwid)' });
+    }
 
     // Check if username and key match an entry in the users array
     const user = users.find(u => u.username === username && u.key === key);
@@ -38,7 +55,7 @@ app.post('/auth', (req, res) => {
     return res.json({ success: true });
 });
 
-// Start the server and listen on the Render-assigned port
+// Start the server and listen on the specified port
 app.listen(port, () => {
-    console.log(`[+] Auth server running on https://uke.onrender.com (port: ${port})`);
+    console.log(`[+] Auth server running on https://uke.onrender.com:${port}`);
 });
