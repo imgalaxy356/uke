@@ -2,19 +2,20 @@ const express = require('express');
 const fs = require('fs');
 const app = express();
 
-// Use environment port for Render, fallback to 10000 locally
-const port = process.env.PORT || 10000;
+// Set the port to 10000 (or any other port you prefer)
+const port = 10000;
 
-app.use(express.json());
+// Middleware to parse JSON body
+app.use(express.json());  // Ensures the server can parse JSON data
 
-// Log incoming requests
+// Log all requests to check if they are being received correctly
 app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    console.log("Body:", req.body);
+    console.log("Received request:", req.method, req.url);
+    console.log("Request body:", req.body);  // Log the body to check if it's being received
     next();
 });
 
-// Load users.json once at startup
+// Load users from users.json asynchronously
 let users = [];
 fs.readFile('users.json', (err, data) => {
     if (err) {
@@ -22,54 +23,39 @@ fs.readFile('users.json', (err, data) => {
     } else {
         try {
             users = JSON.parse(data);
-            console.log("Users loaded:", users);
-        } catch (parseErr) {
-            console.error('Error parsing users.json:', parseErr);
+            console.log("Users loaded:", users); // Log the loaded users
+        } catch (parseError) {
+            console.error('Error parsing users.json:', parseError);
         }
     }
 });
 
-// /auth route
+// Authentication route
 app.post('/auth', (req, res) => {
     const { username, key, hwid } = req.body;
 
+    // Check if username, key, and hwid are provided
     if (!username || !key || !hwid) {
         return res.json({ error: 'Missing required fields (username, key, hwid)' });
     }
 
+    // Check if username and key match an entry in the users array
     const user = users.find(u => u.username === username && u.key === key);
 
     if (!user) {
         return res.json({ error: 'Invalid username or key' });
     }
 
+    // Check if HWID matches
     if (user.hwid !== hwid) {
         return res.json({ error: 'HWID mismatch' });
     }
 
-    const now = new Date();
-    const expiresAt = new Date(user.expires);
-
-    if (expiresAt < now) {
-        return res.json({ error: 'Key has expired', expired: true });
-    }
-
-    // Optional: include expiration info
-    const msLeft = expiresAt.getTime() - now.getTime();
-    const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-
-    return res.json({
-        success: true,
-        message: 'Authentication successful',
-        keyRedeemedOn: user.redeemed || 'N/A',
-        keyExpiresIn: `${daysLeft} day(s)`
-    });
+    // If username, key, and hwid match, return success
+    return res.json({ success: true });
 });
-
-
 
 // Start the server and listen on the specified port
 app.listen(port, () => {
-    console.log([+] Auth server running on https://locomoco.onrender.com:${port});
+    console.log([+] Auth server running on https://uke.onrender.com:${port});
 });
-
