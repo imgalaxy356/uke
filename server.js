@@ -1,7 +1,9 @@
 const express = require('express');
 const fs = require('fs');
 const app = express();
-const port = 3000;
+
+// Use the PORT environment variable or fallback to 3000 if not set
+const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON body
 app.use(express.json());  // Ensures the server can parse JSON data
@@ -44,7 +46,7 @@ app.post('/auth', (req, res) => {
     return res.json({ success: true });
 });
 
-// Start the server and listen on port 3000 (Change to your render URL port in production)
+// Start the server and listen on the Render-assigned port
 app.listen(port, () => {
-    console.log(`[+] Auth server running on http://localhost:${port}`);
+    console.log(`[+] Auth server running on https://uke.onrender.com (port: ${port})`);
 });
