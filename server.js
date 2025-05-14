@@ -63,11 +63,15 @@ app.post('/auth', (req, res) => {
         return res.json({ error: 'Invalid username or key' });
     }
 
+    // Validate the HWID (Processor ID + Disk Serial Number) against the stored HWID
     if (user.hwid !== hwid) {
         return res.json({ error: 'HWID mismatch' });
     }
 
-    return res.json({ success: true });
+    // Generate a JWT token for the authenticated user
+    const token = jwt.sign({ username: user.username, hwid: user.hwid }, JWT_SECRET, { expiresIn: '1h' });
+
+    return res.json({ success: true, token: token });
 });
 
 // Secure endpoint that requires authentication
@@ -76,5 +80,5 @@ app.get('/protected', checkAuth, (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log([+] Auth server running on port ${port});
+    console.log(`Auth server running on port ${port}`);
 });
