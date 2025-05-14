@@ -34,40 +34,44 @@ fs.readFile('users.json', (err, data) => {
 app.post('/auth', (req, res) => {
     const { username, key, hwid } = req.body;
 
+    // Log received data
+    console.log(`Received username: ${username}, key: ${key}, hwid: ${hwid}`);
+
+    // Check if username, key, and hwid are provided
     if (!username || !key || !hwid) {
         return res.json({ error: 'Missing required fields (username, key, hwid)' });
     }
 
+    // Check if username and key match an entry in the users array
     const user = users.find(u => u.username === username && u.key === key);
 
     if (!user) {
         return res.json({ error: 'Invalid username or key' });
     }
 
+    // Log user information
+    console.log(`User found: ${user.username}, HWID: ${user.hwid}, Expires: ${user.expires}`);
+
+    // Check if HWID matches
     if (user.hwid !== hwid) {
         return res.json({ error: 'HWID mismatch' });
     }
 
-    const now = new Date();
-    const expiresAt = new Date(user.expires);
-
-    if (expiresAt < now) {
-        return res.json({ error: 'Key has expired', expired: true });
+    // Check expiration
+    const currentTime = Date.now();
+    const expiresAt = user.expires * 1000; // Assuming 'expires' is in Unix timestamp format
+    if (currentTime >= expiresAt) {
+        return res.json({ error: 'Key has expired' });
     }
 
-    // Optional: include expiration info
-    const msLeft = expiresAt.getTime() - now.getTime();
-    const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-
-    return res.json({
-        success: true,
-        message: 'Authentication successful',
-        keyRedeemedOn: user.redeemed || 'N/A',
-        keyExpiresIn: `${daysLeft} day(s)`
+    // If username, key, and hwid match, return success
+    return res.json({ 
+        success: true, 
+        expires_in_days: Math.floor((expiresAt - currentTime) / (1000 * 60 * 60 * 24))  // Calculate days until expiration
     });
 });
 
 // Start the server and listen on the specified port
 app.listen(port, () => {
-    console.log(`[+] Auth server running on https://locomoco.onrender.com:${port}`);
+    console.log(`[+] Auth server running on https://localhost:${port}`);
 });
