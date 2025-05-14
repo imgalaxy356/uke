@@ -2,6 +2,6 @@
     {
         "username": "testuser",
         "key": "abc123",
-        "hwid": "test"
+        "processorId": "BFEBFBFF000306A9"
     }
 ]
