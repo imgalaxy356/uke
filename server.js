@@ -50,29 +50,27 @@ function checkAuth(req, res, next) {
 }
 
 // Endpoint to authenticate user and generate a JWT token
-app.post('/auth', (req, res) => {
-    const { username, key, hwid } = req.body;
+app.post("/auth", (req, res) => {
+    const { username, key, processorId } = req.body;
 
-    console.log("Received username:", username);  // Add this for debugging
-    console.log("Received key:", key);            // Add this for debugging
-    console.log("Received HWID:", hwid);          // Add this for debugging
+    if (!username || !key || !processorId) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
 
+    const users = JSON.parse(fs.readFileSync("users.json"));
     const user = users.find(u => u.username === username && u.key === key);
 
     if (!user) {
-        return res.json({ error: 'Invalid username or key' });
+        return res.status(403).json({ error: "Invalid username or key" });
     }
 
-    // Validate the HWID (Processor ID + Disk Serial Number) against the stored HWID
-    if (user.hwid !== hwid) {
-        return res.json({ error: 'HWID mismatch' });
+    if (user.processorId !== processorId) {
+        return res.status(403).json({ error: "Invalid processor ID" });
     }
 
-    // Generate a JWT token for the authenticated user
-    const token = jwt.sign({ username: user.username, hwid: user.hwid }, JWT_SECRET, { expiresIn: '1h' });
-
-    return res.json({ success: true, token: token });
+    res.json({ success: true });
 });
+
 
 // Secure endpoint that requires authentication
 app.get('/protected', checkAuth, (req, res) => {
