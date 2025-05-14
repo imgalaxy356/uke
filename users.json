@@ -2,6 +2,6 @@
     {
         "username": "testuser",
         "key": "abc123",
-        "hwid": "test"
+        "processorId": "Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz"
     }
 ]
