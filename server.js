@@ -1,20 +1,11 @@
-require('dotenv').config();  // This will load the environment variables for local development (not needed on Render directly)
-
 const express = require('express');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const app = express();
+const port = 3000;
 
-// Use Render's dynamic port or 3000 as a fallback for local development
-const port = process.env.PORT || 3000;
-
-// Use the JWT_SECRET environment variable
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-    console.error("JWT_SECRET environment variable is required!");
-    process.exit(1);  // Exit the application if the secret is not set
-}
+// Replace this secret with your own secret key
+const JWT_SECRET = '2z$Jx9m2^Fq$kd!wQ7hJv$TgNx*mTz6QzVwX9R8f$pyBqzZz%4';
 
 // Middleware to parse JSON body
 app.use(express.json());
@@ -70,11 +61,12 @@ app.post('/auth', (req, res) => {
     return res.json({ success: true });
 });
 
+
 // Secure endpoint that requires authentication
 app.get('/protected', checkAuth, (req, res) => {
     res.json({ message: 'This is protected data.', user: req.user });
 });
 
 app.listen(port, () => {
-    console.log(`[+] Auth server running on port ${port}`);
+    console.log([+] Auth server running on http://localhost:${port});
 });
