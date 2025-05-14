@@ -6,25 +6,17 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON body
-app.use(express.json());  // Ensures the server can parse JSON data
+app.use(express.json());
 
-// Log all requests to check if they are being received correctly
-app.use((req, res, next) => {
-    console.log("Received request:", req.method, req.url);
-    console.log("Request body:", req.body);  // Log the body to check if it's being received
-    next();
-});
-
-// Load users from users.json
+// Load users from users.json synchronously
 let users = [];
-fs.readFile('users.json', (err, data) => {
-    if (err) {
-        console.error('Failed to load users.json:', err);
-    } else {
-        users = JSON.parse(data);
-        console.log("Users loaded:", users); // Log the loaded users
-    }
-});
+try {
+    const data = fs.readFileSync('users.json');
+    users = JSON.parse(data);
+    console.log("Users loaded:", users); // Log the loaded users
+} catch (err) {
+    console.error('Failed to load users.json:', err);
+}
 
 // Authentication route
 app.post('/auth', (req, res) => {
