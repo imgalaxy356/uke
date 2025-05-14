@@ -3,12 +3,12 @@
     "username": "gamer",
     "key": "dev",
     "hwid": "178BFBFF00A20F12",
-    "expires": 4085124795
+    "expires": "2099-01-01T00:00:00Z"
   },
   {
     "username": "waddles",
     "key": "MatrixGamer-B50AVXCVE34C",
     "hwid": "BFEBFBFF000806C1",
-    "expires": 1749905595
+    "expires": "2025-07-15T00:00:00Z"
   }
 ]
