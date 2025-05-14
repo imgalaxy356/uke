@@ -2,20 +2,19 @@ const express = require('express');
 const fs = require('fs');
 const app = express();
 
-// Set the port to 10000 (or any other port you prefer)
-const port = 10000;
+// Use environment port for Render, fallback to 10000 locally
+const port = process.env.PORT || 10000;
 
-// Middleware to parse JSON body
-app.use(express.json());  // Ensures the server can parse JSON data
+app.use(express.json());
 
-// Log all requests to check if they are being received correctly
+// Log incoming requests
 app.use((req, res, next) => {
-    console.log("Received request:", req.method, req.url);
-    console.log("Request body:", req.body);  // Log the body to check if it's being received
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    console.log("Body:", req.body);
     next();
 });
 
-// Load users from users.json asynchronously
+// Load users.json once at startup
 let users = [];
 fs.readFile('users.json', (err, data) => {
     if (err) {
@@ -23,14 +22,14 @@ fs.readFile('users.json', (err, data) => {
     } else {
         try {
             users = JSON.parse(data);
-            console.log("Users loaded:", users); // Log the loaded users
-        } catch (parseError) {
-            console.error('Error parsing users.json:', parseError);
+            console.log("Users loaded:", users);
+        } catch (parseErr) {
+            console.error('Error parsing users.json:', parseErr);
         }
     }
 });
 
-// Authentication route
+// /auth route
 app.post('/auth', (req, res) => {
     const { username, key, hwid } = req.body;
 
@@ -73,3 +72,4 @@ app.post('/auth', (req, res) => {
 app.listen(port, () => {
     console.log([+] Auth server running on https://locomoco.onrender.com:${port});
 });
+
