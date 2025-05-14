@@ -34,34 +34,24 @@ app.post('/auth', (req, res) => {
         return res.json({ error: 'Missing required fields (username, key, hwid)' });
     }
 
-    const user = users.find(u => u.username === username && u.key === key);
+    const user = users.find(u =>
+        u.username === username &&
+        u.key === key &&
+        u.hwid === hwid  // 🔒 Enforces exact match
+    );
 
     if (!user) {
-        return res.json({ error: 'Invalid username or key' });
+        return res.json({ error: 'Invalid credentials or HWID' });
     }
 
-    if (user.hwid !== hwid) {
-        return res.json({ error: 'HWID mismatch' });
-    }
-
-    const now = new Date();
-    const expiresAt = new Date(user.expires);
-
-    if (expiresAt < now) {
-        return res.json({ error: 'Key has expired', expired: true });
-    }
-
-    // Optional: include expiration info
-    const msLeft = expiresAt.getTime() - now.getTime();
-    const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-
+    const expiresInDays = Math.floor((new Date(user.expires) - new Date()) / (1000 * 60 * 60 * 24));
     return res.json({
         success: true,
-        message: 'Authentication successful',
-        keyRedeemedOn: user.redeemed || 'N/A',
-        keyExpiresIn: `${daysLeft} day(s)`
+        keyExpiresIn: expiresInDays + " day(s)",
+        keyRedeemedOn: user.redeemedOn || "N/A"
     });
 });
+
 
 
 // Start the server and listen on port 10000
