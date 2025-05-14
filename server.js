@@ -5,7 +5,7 @@ const app = express();
 const port = 3000;
 
 // Replace this secret with your own secret key
-const JWT_SECRET = 'your-jwt-secret-key';
+const JWT_SECRET = '2z$Jx9m2^Fq$kd!wQ7hJv$TgNx*mTz6QzVwX9R8f$pyBqzZz%4';
 
 // Middleware to parse JSON body
 app.use(express.json());
