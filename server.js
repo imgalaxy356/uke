@@ -69,5 +69,5 @@ app.post('/auth', (req, res) => {
 
 // Start the server and listen on the specified port
 app.listen(port, () => {
-    console.log(`[+] Auth server running on https://uke.onrender.com:${port}`);
+    console.log(`[+] Auth server running on https://locomoco.onrender.com:${port}`);
 });
