@@ -1,72 +1,50 @@
 const express = require('express');
 const fs = require('fs');
-const jwt = require('jsonwebtoken');
 const app = express();
 const port = 3000;
 
-// Replace this secret with your own secret key
-const JWT_SECRET = '2z$Jx9m2^Fq$kd!wQ7hJv$TgNx*mTz6QzVwX9R8f$pyBqzZz%4';
-
 // Middleware to parse JSON body
-app.use(express.json());
+app.use(express.json());  // Ensures the server can parse JSON data
 
-// Read the users.json file
-function loadUsers() {
-    try {
-        const data = fs.readFileSync('users.json', 'utf8'); // Read the file
-        return JSON.parse(data); // Parse it as JSON
-    } catch (err) {
+// Log all requests to check if they are being received correctly
+app.use((req, res, next) => {
+    console.log("Received request:", req.method, req.url);
+    console.log("Request body:", req.body);  // Log the body to check if it's being received
+    next();
+});
+
+// Load users from users.json
+let users = [];
+fs.readFile('users.json', (err, data) => {
+    if (err) {
         console.error('Failed to load users.json:', err);
-        return [];
+    } else {
+        users = JSON.parse(data);
+        console.log("Users loaded:", users); // Log the loaded users
     }
-}
+});
 
-// Simulating database
-let users = loadUsers();
-
-// Middleware to check for JWT token
-function checkAuth(req, res, next) {
-    const token = req.header('Authorization');
-    if (!token) {
-        return res.status(401).json({ error: 'Authorization token is required' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; // Store the decoded user information in the request
-        next();
-    } catch (err) {
-        return res.status(401).json({ error: 'Invalid or expired token' });
-    }
-}
-
-// Endpoint to authenticate user and generate a JWT token
+// Authentication route
 app.post('/auth', (req, res) => {
     const { username, key, hwid } = req.body;
 
-    console.log("Received username:", username);  // Add this for debugging
-    console.log("Received key:", key);            // Add this for debugging
-    console.log("Received HWID:", hwid);          // Add this for debugging
-
+    // Check if username and key match an entry in the users array
     const user = users.find(u => u.username === username && u.key === key);
 
     if (!user) {
         return res.json({ error: 'Invalid username or key' });
     }
 
+    // Check if HWID matches
     if (user.hwid !== hwid) {
         return res.json({ error: 'HWID mismatch' });
     }
 
+    // If username, key, and hwid match, return success
     return res.json({ success: true });
 });
 
-
-// Secure endpoint that requires authentication
-app.get('/protected', checkAuth, (req, res) => {
-    res.json({ message: 'This is protected data.', user: req.user });
-});
-
+// Start the server and listen on port 3000 (Change to your render URL port in production)
 app.listen(port, () => {
-    console.log([+] Auth server running on http://localhost:${port});
+    console.log(`[+] Auth server running on http://localhost:${port}`);
 });
