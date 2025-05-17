@@ -141,7 +141,21 @@
     "key": "MatrixGamer-JCA934AXCK3CB4",
     "hwid": "BFEBFBFF000706A8",
     "expires": "2025-06-16T00:00:00Z"
+    },
+  {
+    "username": "jelly",
+    "key": "MatrixGamer-GHbA9JKAVB",
+    "hwid": "BFEBFBFF000506E3",
+    "expires": "2099-06-16T00:00:00Z"
+},
+  {
+    "username": "wezox",
+    "key": "MatrixGamer-GUYyHhHH9BNex",
+    "hwid": "BFEBFBFF000306C3",
+    "expires": "2025-06-17T00:00:00Z"
   }
+    
+  
   
   
 ]
